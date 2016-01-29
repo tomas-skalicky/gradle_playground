@@ -1,0 +1,13 @@
+###
+# Eclipse files
+###
+.metadata/
+.settings/
+RemoteSystemsTempFiles/
+
+###
+# Gradle files
+###
+build/
+.gradle
+

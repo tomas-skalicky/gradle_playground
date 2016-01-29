@@ -1,0 +1,60 @@
+apply plugin: 'war'
+
+repositories {
+    jcenter()
+}
+
+ext {
+    // Definition of desired version.
+    slf4jApi = 'org.slf4j:slf4j-api:1.7.14'
+
+    libraries = [
+        // Desired version of slf4j_api is "hidden" in an array called
+        // according to the lib dependent on the slf4j_api. Effect is
+        // the slf4j_api in the desired version is automatically added to the compile
+        // configuration.
+        log4j_slf4j_impl    : [ 'org.apache.logging.log4j:log4j-slf4j-impl:2.5',
+                                slf4jApi ],
+        slf4j_log4j12       : [ 'org.slf4j:slf4j-log4j12:1.5.3',
+                                slf4jApi ],
+        // The definition of slf4j_api is also here, in libraries map, in order
+        // to have the map complete.
+        slf4j_api           : slf4jApi,
+    ]
+
+    sharedLibraries = [
+        libraries.log4j_slf4j_impl,
+        // This is here correct. We want to have slf4j_api with desired version
+        // in shared. --> All other dependencies which depends on slf4j_api
+        // should use the desired version of slf4j_api.
+        libraries.slf4j_api,
+    ]
+}
+
+configurations {
+    sharedRuntime
+}
+
+dependencies {
+    compile libraries.log4j_slf4j_impl
+    compile libraries.slf4j_log4j12
+
+    sharedRuntime sharedLibraries
+}
+
+war {
+    println 'Shared libs (slf4j_api in the desired version should be listed here):'
+    configurations.sharedRuntime.each { println " -> ${it.name}" }
+    println ' '
+
+    println 'Before (slf4j_api in the desired version should be listed here):'
+    classpath.each { println " --> ${it.name}" }
+    println ' '
+
+    classpath -= configurations.sharedRuntime
+
+    println 'After (slf4j_api should not be listed here):'
+    classpath.each { println " --> ${it.name}" }
+    println ' '
+}
+
